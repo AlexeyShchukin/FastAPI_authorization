@@ -2,17 +2,10 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from auth.password import hash_password, pwd_context
 from auth.tokens import create_access_token, create_refresh_token, get_user_from_token
-from models.user import UserCreate, LoginRequest
-from database.fake_db import db, username_exists
+from models.user import UserCreate
+from database.fake_db import db, username_exists, get_user
 
 app = FastAPI()
-
-
-def get_user(username: str):
-    for user in db:
-        if user.get("username") == username:
-            return user
-    return None
 
 
 @app.post("/registration")
