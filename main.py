@@ -1,37 +1,41 @@
-# Аутентификация - проверка наличия логина в базе и соответствующего ему пароля
-# Авторизация - проверка наличия у пользователя прав для обращения к этой ручке
-# JWT токен кодируется с помощью SECRET_KEY и декодируется(https://jwt.io/),
-# занимает очень много памяти по сравнению с сессиями
-
-from fastapi import FastAPI, HTTPException, Response, Depends
-from authx import AuthX, AuthXConfig
-from pydantic import BaseModel
-
+from fastapi import FastAPI, HTTPException, status
+from models import UserCreate
+from auth import pwd_context, create_jwt_token, get_user_from_token
 
 app = FastAPI()
 
-config = AuthXConfig()
-config.JWT_SECRET_KEY = 'SECRET_KEY'
-config.JWT_ACCESS_COOKIE_NAME = 'my_access_token'
-config.JWT_TOKEN_LOCATION = ['cookies']
-
-security = AuthX(config=config)
+db = [{"username": "admin", "password": "some_password"}, {"username": "some_user", "password": "some_pass"}]
 
 
-class UserLogicSchema(BaseModel):
-    username: str
-    password: str
+def get_user(username: str):
+    for user in db:
+        if user.get("username") == username:
+            return user
+    return None
 
 
-@app.post('/login')
-def login(credentials: UserLogicSchema, response: Response):
-    if credentials.username == 'test' and credentials.password == 'test':
-        token = security.create_access_token(uid='1')
-        response.set_cookie(config.JWT_ACCESS_COOKIE_NAME, token)
-        return {'access_token': token}
-    raise HTTPException(status_code=401, detail='Incorrect username or password')
+@app.post("/registration")
+async def create_user(user: UserCreate):
+    if any(user_data["username"] == user.username for user_data in db):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A user with this name already exists"
+        )
+    hashed_password = pwd_context.hash(user.password)
+    db.append({"username": user.username, "password": hashed_password})
+    return {"message": f"User registered successfully"}
 
 
-@app.get('/protected', dependencies=[Depends(security.access_token_required)])
-def protected():
-    return {'data': 'TOP SECRET'}
+@app.post("/login", description="Endpoint for token creation")
+def login(username: str, password: str):
+    user = get_user(username)
+    if user and pwd_context.verify(password, user["password"]):  # Проверяем хеш пароля
+        token = create_jwt_token({"sub": username})
+        return {"access_token": token}
+    raise HTTPException(status_code=401, detail="Invalid credentials")
+
+
+@app.get("/protected", description="Endpoint for token verification")
+def token_verification(token: str):
+    username = get_user_from_token(token)
+    return username
