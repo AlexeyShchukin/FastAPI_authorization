@@ -19,3 +19,8 @@ class UserCreate(BaseModel):
         if not search(r'[^A-Za-z0-9]', pwd):
             raise ValueError('The password must contain at least one special character.')
         return pwd
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
