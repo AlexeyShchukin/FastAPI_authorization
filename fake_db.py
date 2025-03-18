@@ -1,0 +1,1 @@
+db = [{"username": "admin", "password": "some_password"}, {"username": "some_user", "password": "some_pass"}]
