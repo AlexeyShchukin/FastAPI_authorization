@@ -15,7 +15,7 @@ def create_user(user: UserCreate):
                             detail="A user with this name already exists",
                             )
     hashed_password = hash_password(user.password)
-    db.append({"username": user.username, "password": hashed_password})
+    db.append({"username": user.username, "password": hashed_password, "role": "user"})
     return {"message": "User registered successfully"}
 
 
