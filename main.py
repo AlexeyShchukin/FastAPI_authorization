@@ -20,11 +20,11 @@ def create_user(user: UserCreate):
 
 
 @app.post("/login", description="Creating access and refresh tokens")
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = get_user(form_data.username)
-    if user and pwd_context.verify(form_data.password, user["password"]):  # Проверяем хеш пароля
-        access_token = create_access_token({"sub": form_data.username})
-        refresh_token = create_refresh_token({"sub": form_data.username})
+def login(user_data: OAuth2PasswordRequestForm = Depends()):
+    user = get_user(user_data.username)
+    if user and pwd_context.verify(user_data.password, user["password"]):  # Проверяем хеш пароля
+        access_token = create_access_token({"sub": user_data.username})
+        refresh_token = create_refresh_token({"sub": user_data.username})
         return {"access_token": access_token,
                 "refresh_token": refresh_token,
                 "token_type": "bearer"

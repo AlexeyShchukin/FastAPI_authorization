@@ -1,4 +1,6 @@
-db = [{"username": "admin", "password": "some_password"}, {"username": "some_user", "password": "some_pass"}]
+from auth.password import hash_password
+
+db = []
 
 
 def username_exists(username: str) -> bool:
@@ -10,3 +12,12 @@ def get_user(username: str):
         if user.get("username") == username:
             return user
     return None
+
+
+def create_admin():
+    if not username_exists("admin"):
+        hashed_password = hash_password("Admin_pass1")
+        db.append({"username": "admin", "password": hashed_password, "role": "admin"})
+
+
+create_admin()
