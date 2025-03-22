@@ -1,5 +1,4 @@
 from enum import Enum
-
 from pydantic import BaseModel, field_validator, Field
 from re import search
 

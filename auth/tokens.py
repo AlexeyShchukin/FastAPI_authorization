@@ -4,8 +4,6 @@ from fastapi import HTTPException, status
 from dotenv import load_dotenv
 from os import getenv
 
-from database.fake_db import get_user
-
 load_dotenv()
 SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = "HS256"
