@@ -1,34 +1,36 @@
 from jwt import encode, decode, ExpiredSignatureError, InvalidTokenError
 from datetime import datetime, timezone, timedelta
-from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import HTTPException, status
 from dotenv import load_dotenv
 from os import getenv
+
+from database.fake_db import get_user
 
 load_dotenv()
 SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 30
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
-def create_access_token(data: dict):
+def create_access_token(user: dict):
     expiration_time = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    data["exp"] = expiration_time
-    return encode(data, SECRET_KEY, algorithm=ALGORITHM)
+    user["exp"] = expiration_time
+    return encode(user, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_refresh_token(data: dict):
+def create_refresh_token(user: dict):
     expiration_time = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    data["exp"] = expiration_time
-    return encode(data, SECRET_KEY, algorithm=ALGORITHM)
+    user["exp"] = expiration_time
+    return encode(user, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_user_from_token(token: str = Depends(oauth2_scheme)):
+def get_user_from_token(token: str):
     try:
         payload = decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload.get("sub")
+        username = payload.get("sub")
+        role = payload.get("role")
+        return {"username": username, "role": role}
     except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

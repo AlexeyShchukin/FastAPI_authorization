@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel, field_validator, Field
 from re import search
 
@@ -21,6 +23,6 @@ class UserCreate(BaseModel):
         return pwd
 
 
-class LoginRequest(BaseModel):
-    username: str
-    password: str
+class Role(str, Enum):
+    ADMIN = "admin"
+    USER = "user"

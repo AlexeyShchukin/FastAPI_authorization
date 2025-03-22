@@ -1,4 +1,5 @@
 from auth.password import hash_password
+from models.user import Role
 
 db = []
 
@@ -17,7 +18,7 @@ def get_user(username: str):
 def create_admin():
     if not username_exists("admin"):
         hashed_password = hash_password("Admin_pass1")
-        db.append({"username": "admin", "password": hashed_password, "role": "admin"})
+        db.append({"username": "admin", "password": hashed_password, "role": Role.ADMIN})
 
 
 create_admin()
