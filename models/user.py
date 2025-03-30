@@ -9,10 +9,6 @@ class UserBase(BaseModel):
     full_name: str | None = None
 
 
-class UserOut(UserBase):
-    pass
-
-
 class UserIn(UserBase):
     model_config = ConfigDict(extra="forbid")
 
@@ -30,6 +26,10 @@ class UserIn(UserBase):
         if not search(r'[^A-Za-z0-9]', pwd):
             raise ValueError('The password must contain at least one special character.')
         return pwd
+
+
+class UserOut(UserBase):
+    pass
 
 
 class Role(str, Enum):
