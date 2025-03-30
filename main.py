@@ -1,29 +1,28 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from auth.password import hash_password, pwd_context
+from auth.password import password_hasher, pwd_context
 from auth.rbac import has_role
 from auth.tokens import create_access_token, create_refresh_token, get_user_from_token
-from models.user import UserCreate, Role
-from database.fake_db import db, username_exists, get_user
+from models.user import UserIn, Role, UserOut
+from database.fake_db import username_exists, get_user, save_user
 
 app = FastAPI()
 
 
 @app.post("/registration")
-def create_user(user: UserCreate):
+def create_user(user: UserIn) -> UserOut:
     if username_exists(user.username):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="A user with this name already exists",
                             )
-    hashed_password = hash_password(user.password)
-    db.append({"username": user.username, "password": hashed_password, "role": Role.USER})
-    return {"message": "User registered successfully"}
+    saved_user = save_user(user)
+    return saved_user
 
 
 @app.post("/login", description="Creating access and refresh tokens")
 def login(user_data: OAuth2PasswordRequestForm = Depends()):
     user = get_user(user_data.username)
-    if user and pwd_context.verify(user_data.password, user["password"]):  # Проверяем хеш пароля
+    if user and pwd_context.verify(user_data.password, user["hashed_password"]):  # Проверяем хеш пароля
         access_token = create_access_token({"sub": user_data.username, "role": user["role"]})
         refresh_token = create_refresh_token({"sub": user_data.username, "role": user["role"]})
         return {"access_token": access_token,

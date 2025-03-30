@@ -1,12 +1,18 @@
 from enum import Enum
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, field_validator, Field, EmailStr, ConfigDict
 from re import search
 
 
-class UserCreate(BaseModel):
+class UserOut(BaseModel):
     username: str = Field(..., min_length=3, max_length=30)
-    password: str = Field(..., min_length=8)
+    email: EmailStr = None
+    full_name: str | None = None
 
+
+class UserIn(UserOut):
+    model_config = ConfigDict(extra="forbid")
+
+    password: str = Field(..., min_length=8)
 
     @field_validator('password')
     @classmethod
@@ -25,3 +31,8 @@ class UserCreate(BaseModel):
 class Role(str, Enum):
     ADMIN = "admin"
     USER = "user"
+
+
+class UserInDB(UserOut):
+    hashed_password: str
+    role: Role = Role.USER
