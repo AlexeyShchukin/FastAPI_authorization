@@ -25,7 +25,7 @@ def get_user(username: str):
 def create_admin():
     if not username_exists("admin"):
         hashed_password = password_hasher("Admin_pass1")
-        db.append({"username": "admin", "password": hashed_password, "role": Role.ADMIN})
+        db.append({"username": "admin", "hashed_password": hashed_password, "role": Role.ADMIN})
 
 
 create_admin()
