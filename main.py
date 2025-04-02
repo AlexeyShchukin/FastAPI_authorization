@@ -1,6 +1,8 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from typing import Annotated
+
+from fastapi import FastAPI, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordRequestForm
-from auth.password import password_hasher, pwd_context
+from auth.password import pwd_context
 from auth.rbac import has_role
 from auth.tokens import create_access_token, create_refresh_token, get_user_from_token
 from models.user import UserIn, Role, UserOut
@@ -9,8 +11,11 @@ from database.fake_db import username_exists, get_user, save_user
 app = FastAPI()
 
 
-@app.post("/registration")
-def create_user(user: UserIn) -> UserOut:
+@app.post("/registration",
+          status_code=status.HTTP_201_CREATED,
+          tags=["Users"],
+          response_model=UserOut)
+def create_user(user: Annotated[UserIn, Form()]):
     if username_exists(user.username):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="A user with this name already exists",
@@ -19,7 +24,9 @@ def create_user(user: UserIn) -> UserOut:
     return saved_user
 
 
-@app.post("/login", description="Creating access and refresh tokens")
+@app.post("/login",
+          description="Creating access and refresh tokens",
+          tags=["Users"])
 def login(user_data: OAuth2PasswordRequestForm = Depends()):
     user = get_user(user_data.username)
     if user and pwd_context.verify(user_data.password, user["hashed_password"]):  # Проверяем хеш пароля

@@ -4,14 +4,13 @@ from re import search
 
 
 class UserBase(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     username: str = Field(..., min_length=3, max_length=30)
-    email: EmailStr | None = None
-    full_name: str | None = None
+    email: EmailStr
 
 
 class UserIn(UserBase):
-    model_config = ConfigDict(extra="forbid")
-
     password: str = Field(..., min_length=8)
 
     @field_validator('password')
@@ -39,4 +38,4 @@ class Role(str, Enum):
 
 class UserInDB(UserBase):
     hashed_password: str
-    role: Role | str = Role.USER
+    role: str = Role.USER.value

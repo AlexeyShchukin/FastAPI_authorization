@@ -6,7 +6,7 @@ db = []
 
 def save_user(user_in: UserIn):
     hashed_password = password_hasher(user_in.password)
-    user_in_db = UserInDB(**user_in.model_dump(), hashed_password=hashed_password)
+    user_in_db = UserInDB(**user_in.model_dump(exclude={"password"}), hashed_password=hashed_password)
     db.append(user_in_db.model_dump())
     return user_in_db
 
