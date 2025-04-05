@@ -11,16 +11,18 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 
 
-def create_access_token(user: dict):
+def create_access_token(data: dict):
+    to_encode = data.copy()
     expiration_time = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    user["exp"] = expiration_time
-    return encode(user, SECRET_KEY, algorithm=ALGORITHM)
+    to_encode["exp"] = expiration_time
+    return encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_refresh_token(user: dict):
+def create_refresh_token(data: dict):
+    to_encode = data.copy()
     expiration_time = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    user["exp"] = expiration_time
-    return encode(user, SECRET_KEY, algorithm=ALGORITHM)
+    to_encode["exp"] = expiration_time
+    return encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def get_user_from_token(token: str):

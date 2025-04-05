@@ -2,11 +2,11 @@ from typing import Annotated
 
 from fastapi import FastAPI, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordRequestForm
-from auth.password import pwd_context
+from auth.password import verify_password
 from auth.rbac import has_role
 from auth.tokens import create_access_token, create_refresh_token, get_user_from_token
-from models.user import UserIn, Role, UserOut
-from database.fake_db import username_exists, get_user, save_user
+from models.users import UserIn, Role, UserOut
+from database.fake_db import username_exists, get_user, save_user, authenticate_user, db
 
 app = FastAPI()
 
@@ -24,12 +24,12 @@ def create_user(user: Annotated[UserIn, Form()]):
     return saved_user
 
 
-@app.post("/login",
+@app.post("/tokens",
           description="Creating access and refresh tokens",
           tags=["Users"])
 def login(user_data: OAuth2PasswordRequestForm = Depends()):
-    user = get_user(user_data.username)
-    if user and pwd_context.verify(user_data.password, user["hashed_password"]):  # Проверяем хеш пароля
+    user = authenticate_user(db, user_data.username, user_data.password)
+    if user:
         access_token = create_access_token({"sub": user_data.username, "role": user["role"]})
         refresh_token = create_refresh_token({"sub": user_data.username, "role": user["role"]})
         return {"access_token": access_token,
@@ -49,7 +49,6 @@ def refresh_token(user: dict = Depends(get_user_from_token)):
         "access_token": new_access_token,
         "token_type": "bearer"
     }
-
 
 
 @app.get("/protected_resource", description="Resource for authorized users")
