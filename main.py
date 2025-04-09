@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2PasswordRequestForm
 from auth.rbac import has_role
 from auth.tokens import create_access_token, create_refresh_token, get_user_from_token
-from exceptions import validation_exception_handler
+from handlers import validation_exception_handler
 from models.users import UserIn, Role, UserOut
 from database.fake_db import username_exists, get_user, save_user, authenticate_user, db
 
