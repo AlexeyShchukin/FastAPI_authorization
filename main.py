@@ -1,14 +1,17 @@
 from typing import Annotated
 
 from fastapi import FastAPI, Depends, HTTPException, status, Form
+from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2PasswordRequestForm
-from auth.password import verify_password
 from auth.rbac import has_role
 from auth.tokens import create_access_token, create_refresh_token, get_user_from_token
+from exceptions import validation_exception_handler
 from models.users import UserIn, Role, UserOut
 from database.fake_db import username_exists, get_user, save_user, authenticate_user, db
 
 app = FastAPI()
+
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 
 @app.post("/registration",

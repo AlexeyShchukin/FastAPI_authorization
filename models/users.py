@@ -1,17 +1,18 @@
 from enum import Enum
-from pydantic import BaseModel, field_validator, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, field_validator, Field, EmailStr, ConfigDict, constr
 from re import search
 
 
 class UserBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    username: str = Field(..., min_length=3, max_length=30)
+    username: constr(min_length=8, max_length=16) = Field(description="Username must be from 8 to 16 characters")
     email: EmailStr
 
 
 class UserIn(UserBase):
-    password: str = Field(..., min_length=8)
+    password: constr(min_length=8) = Field(description="""Password must be minimum 8 characters 
+    including one capital and one lowercase letter, one number and one special character""")
 
     @field_validator('password')
     @classmethod
