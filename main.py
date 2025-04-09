@@ -3,15 +3,26 @@ from typing import Annotated
 from fastapi import FastAPI, Depends, HTTPException, status, Form
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2PasswordRequestForm
+from starlette.middleware.cors import CORSMiddleware
+
 from auth.rbac import has_role
 from auth.tokens import create_access_token, create_refresh_token, get_user_from_token
 from handlers import validation_exception_handler
+from middlewares import LoggingMiddleware, origins
 from models.users import UserIn, Role, UserOut
 from database.fake_db import username_exists, get_user, save_user, authenticate_user, db
 
 app = FastAPI()
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=['*'],
+    allow_headers=['*'],
+    allow_credentials=True
+)
 
 
 @app.post("/registration",

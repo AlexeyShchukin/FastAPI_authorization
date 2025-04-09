@@ -6,7 +6,7 @@ from re import search
 class UserBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    username: constr(min_length=8, max_length=16) = Field(description="Username must be from 8 to 16 characters")
+    username: constr(max_length=16) = Field(description="Username must be not more than 16 characters")
     email: EmailStr
 
 
